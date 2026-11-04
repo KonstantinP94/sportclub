@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+
+{% block title %} {{ trainer.first_name }} {{ trainer.last_name }} - SportClub {% endblock %}
+
+{% block content %}
+<h1>{{ trainer.first_name }} {{ trainer.last_name }}</h1>
+<p>{{ trainer.specialization }}</p>
+<p>Опыт: {{ trainer.experience }} лет</p>
+<p>{{ trainer.description }}</p>
+
+{% if avg_rating%}
+    <p>⭐ Средний рейтинг: {{ avg_rating|floatformat:1 }} ({{ reviews|length }} отзывов)</p>
+{% endif %}
+
+<h2>Расписание</h2>
+
+<!-- Фильтры -->
+<form method="get">
+    <label>С даты: <input type='date' name='date_from' value="{{ date_from }}"></label>
+    <label>По дату: <input type='date' name='date_to' value="{{ date_to }}"></label>
+    <label>
+        <input type="checkbox" name='show_only_free' {% if show_only_free == "on" %}checked {% endif %}>
+        Только свободные
+    </label>
+    <button type='submit'>Применить</button>
+</form>
+
+
+<!-- Слоты -->
+{% if slots %}
+    <ul>
+        {% for slot in slots %}
+        <li>
+            {{ slot.date|date:"d.m.Y"}} - {{ slot.start_time|time:"H:i"}} - {{ slot.end_time|time:"H:i"}}
+            {% if slot.is_booked %}
+                (Занято)
+            {% elif slot.is_past %}
+                (Дата прошла)
+            {% else %}
+                (Свободно)
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Расписание пока не составлено</p>
+{% endif %}
+
+<h2>Отзывы</h2>
+{% if reviews %}
+    {% for review in reviews %}
+        <div>
+            <strong>{{ review.user.username }}</strong> - ⭐ {{ review.rating }}/5
+            <p>{{ review.text }}</p>
+        </div>
+    {% endfor %}
+{% else%}
+        <p>Пока нет отзывов.</p>
+{% endif %}
+{% endblock %}
+

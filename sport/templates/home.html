@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Наши тренеры</h1>
+
+    {% if trainers %}
+        {% for trainer in trainers %}
+            <div>
+                <h2>{{ trainer.first_name }} {{ trainer.last.name }}</h2>
+                <p>{{ trainer.specialization }}</p>
+                <p>Опыт: {{ trainer.experience }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Пока нет тренеров.</p>
+    {% endif %}
+{% endblock %}
