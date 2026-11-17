@@ -6,11 +6,14 @@
     {% if trainers %}
         {% for trainer in trainers %}
             <div>
-                <h2>{{ trainer.first_name }} {{ trainer.last.name }}</h2>
+                <h2>{{ trainer.first_name }} {{ trainer.last_name }}</h2>
                 <p>{{ trainer.specialization }}</p>
                 <p>Опыт: {{ trainer.experience }}</p>
+                <a href="{% url 'sport:trainer_detail' trainer.id %}">Расписание и запись</a>
             </div>
+            <hr> 
         {% endfor %}
+        <hr>
     {% else %}
         <p>Пока нет тренеров.</p>
     {% endif %}

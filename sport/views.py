@@ -1,7 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Avg
 from datetime import date
-from .models import Trainer, Slot
+from .models import Trainer, Slot, Booking
 
 def home(request):
     trainers = Trainer.objects.all()
@@ -43,3 +45,29 @@ def trainer_detail(request, trainer_id):
                     'user_review': user_review,   
                       })
                   
+                  
+
+@login_required
+def book_slot(request, slot_id):
+    slot = get_object_or_404(Slot, id=slot_id)
+    
+    if slot.is_booked:
+        messages.error(request, 'Этот слот занят, выберите другое время.')
+        return redirect('sport:trainer_detail', trainer_id=slot.trainer_id)
+    
+    Booking.objects.create(user=request.user, slot=slot)
+    
+    messages.success(request, f'Вы записаны на {slot.start_time}')
+    return redirect('sport:trainer_detail', trainer_id=slot.trainer_id)
+
+
+@login_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    slot = booking.slot
+    trainer_id = slot.trainer_id
+    
+    booking.delete()
+    
+    messages.succes(request, "Запись успешно отменена")
+    return redirect('sport:trainer_detail', trainer_id=trainer_id)

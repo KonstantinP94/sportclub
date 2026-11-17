@@ -28,21 +28,34 @@
 
 <!-- Слоты -->
 {% if slots %}
-    <ul>
-        {% for slot in slots %}
-        <li>
-            {{ slot.date|date:"d.m.Y"}} - {{ slot.start_time|time:"H:i"}} - {{ slot.end_time|time:"H:i"}}
-            {% if slot.is_booked %}
-                (Занято)
-            {% elif slot.is_past %}
-                (Дата прошла)
-            {% else %}
-                (Свободно)
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
+    <table border="1" cellpadding="8" style="border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in slots %}
+            <tr {% if slot.is_booked %}style="background-color: #eee; color: #999;"{% endif %}>
+                <td>{{ slot.date|date:"d.m.Y" }}</td>
+                <td>{{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}</td>
+                <td>
+                    {% if slot.is_booked %}
+                        <span>Занято</span>
+                    {% elif slot.is_past %}
+                        <span>Дата прошла</span>
+                    {% else %}
+                        <a href="{% url 'sport:book_slot' slot.pk %}">Записаться</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% else %}
+     
     <p>Расписание пока не составлено</p>
 {% endif %}
 
