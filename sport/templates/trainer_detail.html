@@ -8,10 +8,13 @@
 <p>Опыт: {{ trainer.experience }} лет</p>
 <p>{{ trainer.description }}</p>
 
-{% if avg_rating%}
+{% if avg_rating %}
     <p>⭐ Средний рейтинг: {{ avg_rating|floatformat:1 }} ({{ reviews|length }} отзывов)</p>
 {% endif %}
 
+<hr>
+
+<!-- ================= РАСПИСАНИЕ ================= -->
 <h2>Расписание</h2>
 
 <!-- Фильтры -->
@@ -19,14 +22,13 @@
     <label>С даты: <input type='date' name='date_from' value="{{ date_from }}"></label>
     <label>По дату: <input type='date' name='date_to' value="{{ date_to }}"></label>
     <label>
-        <input type="checkbox" name='show_only_free' {% if show_only_free == "on" %}checked {% endif %}>
+        <input type="checkbox" name='show_only_free' {% if show_only_free == "on" %}checked{% endif %}>
         Только свободные
     </label>
     <button type='submit'>Применить</button>
 </form>
 
-
-<!-- Слоты -->
+<!-- Таблица слотов -->
 {% if slots %}
     <table border="1" cellpadding="8" style="border-collapse: collapse;">
         <thead>
@@ -55,20 +57,64 @@
         </tbody>
     </table>
 {% else %}
-     
     <p>Расписание пока не составлено</p>
 {% endif %}
 
+<hr>
+
+<!-- ================= ОТЗЫВЫ ================= -->
 <h2>Отзывы</h2>
+
+<!-- 1. Сначала форма добавления (если авторизован и еще не оставлял) -->
+{% if user.is_authenticated %}
+    {% if not user_review %}
+        <h3>Оставить отзыв</h3>
+        <form method="POST" action="{% url 'sport:add_review' trainer.id %}">
+            {% csrf_token %}
+            <label>
+                Оценка:
+                <select name="rating">
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                </select>
+            </label>
+            <br>
+            <textarea name="text" rows="4" cols="50" placeholder="Ваш отзыв..." required></textarea>
+            <br>
+            <button type='submit'>Отправить</button>
+        </form>
+    {% else %}
+        <!-- Если пользователь уже оставлял отзыв, можно написать, что он его оставил -->
+        <p><em>Вы уже оставили отзыв этому тренеру.</em></p>
+    {% endif %}
+{% else %}
+    <!-- Для гостей -->
+    <p><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+{% endif %}
+
+<!-- 2. Потом список всех отзывов -->
 {% if reviews %}
+    <div style="margin-top: 20px;">
     {% for review in reviews %}
-        <div>
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
             <strong>{{ review.user.username }}</strong> - ⭐ {{ review.rating }}/5
             <p>{{ review.text }}</p>
+
+            {# Показываем кнопку удаления только владельцу отзыва #}
+            {% if review.user == user %}
+                <form method="POST" action="{% url 'sport:delete_review' review.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type='submit' onclick='return confirm("Удалить отзыв?");'>Удалить</button>
+                </form>
+            {% endif %}
         </div>
     {% endfor %}
-{% else%}
-        <p>Пока нет отзывов.</p>
+    </div>
+{% else %}
+    <p>Пока нет отзывов.</p>
 {% endif %}
-{% endblock %}
 
+{% endblock %}

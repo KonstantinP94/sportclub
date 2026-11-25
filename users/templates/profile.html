@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}Личный кабинет SportClub{% endblock %}
+
+{% block content %}
+<h1>Личный кабинет</h1>
+<p>Пользователь: <strong>{{ user.username }}</strong></p>
+
+<h2>Мои записи</h2>
+
+{% if bookings %}
+    <table border='1' cellpadding="8" style="border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Тренер</th>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.slot.trainer.first_name }} {{ booking.slot.trainer.last_name }}</td>
+                    <td>{{ booking.slot.date|date:"d.m.Y" }}</td>
+                    <td>{{ booking.slot.start_time|time:"H:i"}} - {{ booking.slot.end_time|time:"H:i"}}</td>
+                    <td>
+                        <form method="post" action="{% url 'sport:cancel_booking' booking.pk %}" style='display:inline;'>
+                            {% csrf_token %}
+                            <button type='submit' onclick="return confirm('Отменить запись?');">Отменить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% else %}
+    <p>У вас пока нет записей</p>
+    <a href="{% url "sport:home" %}">Выбрать тренера</a>
+
+{% endif %}
+{% endblock %}
